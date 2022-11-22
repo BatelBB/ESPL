@@ -11,8 +11,22 @@ int foo()
 }
 void point_at(void *p);
 void foo1();
-char g = 'g';
+char* g = "ll";
 void foo2();
+
+
+// Can you tell the location (stack, code, etc.) of each memory address?
+// What can you say about the numerical values? Do they obey a particular order?
+// Answer: global variables and functions are stored in 0x56..
+//          local variables are stored in 0xff with on bit less then the global variable so it is higher in the stack
+
+// Is long integer data type enough for dist (address difference) variables ? 
+// No, because in 32 system the size is 4 bytes, in 64 system the size is 8 bytes
+
+// Where is each memory address allocated and what does it have to do with the printed distance?
+// Answer: dist1 is the distance between two consecutive global integers. So the distance is 4
+//         dist2 is between a local and a global variable. Locals are stored higher in the stack.
+//         dist3 is the distance between a global function and a global variable.
 
 int main(int argc, char **argv)
 {
@@ -37,6 +51,8 @@ int main(int argc, char **argv)
     printf("- &foo1: %p\n", &foo1);
     printf("- &foo1: %p\n", &foo2);
     printf("- &foo2 - &foo1: %ld\n", &foo2 - &foo1);
+
+    char* nn[9];
 
     int iarray[] = {1, 2, 3};
     char carray[] = {'a', 'b', 'c'};

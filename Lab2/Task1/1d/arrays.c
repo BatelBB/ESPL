@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+
+// Add an uninitialized pointer local variable p, and print its value (not the value it points to). What did you observe? 
+// Answer: there is big distance btween array location and pointer.
 int main(int argc, char **argv)
 {
     int iarray[] = {1, 2, 3};

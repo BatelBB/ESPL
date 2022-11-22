@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+// What can you say about the behavior of the '+' operator? 
+// Answer: The + operator is equal to ptr + 1*sizeof(ptr), moving 1 * the size of the object.
+//          Arrays are sequential in the memmory address 
 int main(int argc, char **argv)
 {
     int iarray[3];
@@ -37,7 +40,6 @@ int main(int argc, char **argv)
     printf("- hexa farray+1: %x\n", farray + 1);
     printf("- hexa darray: %x\n", darray);
     printf("- hexa darray+1: %x\n", darray + 1);
-    printf("- sizeof(double): %d\n", sizeof(double));
     printf("- hexa carray: %x\n", carray);
     printf("- hexa carray+1: %x\n", carray + 1);
 
