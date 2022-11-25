@@ -64,12 +64,13 @@ link *list_print(link *virus_list, FILE *out)
     return virus_list;
 }
 
-/* Add a new link with the given data to the list 
-(either at the end or the beginning, depending on what your TA tells you), 
-and return a pointer to the list (i.e., the first link in the list). 
+/* Add a new link with the given data to the list
+(either at the end or the beginning, depending on what your TA tells you),
+and return a pointer to the list (i.e., the first link in the list).
 If the list is null - create a new entry and return a pointer to the entry. */
 link *list_append(link *virus_list, virus *data)
 {
+
     if (virus_list == NULL)
     {
         virus_list = malloc(sizeof(link));
@@ -131,6 +132,8 @@ virus *readVirus(FILE *file)
 }
 link *load(link *virus_list)
 {
+    // printf("Virus list not null\n");
+
     list_free(virus_list);
     virus_list = malloc(sizeof(link));
     virus_list->vir = NULL;
@@ -166,18 +169,19 @@ link *print(link *virus_list)
 }
 void detect_virus(char *buffer, unsigned int size, link *virus_list)
 {
-    link * list = virus_list;
+    link *list = virus_list;
     int i = 0;
     int ret;
     while (list != NULL)
     {
         i = 0;
         while (i < size)
-        {   
-            ret = memcmp(buffer+i, list->vir->sig, list->vir->SigSize);
-            if (ret == 0){
-                fprintf(stdout,"Starting location: %d\nVirus name: %s\nSize of signature: %d\n\n",
-                        i, list->vir->virusName,list->vir->SigSize);
+        {
+            ret = memcmp(buffer + i, list->vir->sig, list->vir->SigSize);
+            if (ret == 0)
+            {
+                fprintf(stdout, "Starting location: %d\nVirus name: %s\nSize of signature: %d\n\n",
+                        i, list->vir->virusName, list->vir->SigSize);
                 break;
             }
 
@@ -189,12 +193,12 @@ void detect_virus(char *buffer, unsigned int size, link *virus_list)
 
 link *detect(link *virus_list)
 {
-    
+
     FILE *fp;
     fp = loadFromFile();
-    
-    char *buffer = (calloc(10000, sizeof(char)));;
-    
+
+    char *buffer = (calloc(10000, sizeof(char)));
+
     unsigned int size;
 
     size = fread(buffer, 1, 10000, fp);
@@ -205,31 +209,72 @@ link *detect(link *virus_list)
     fclose(fp);
     return virus_list;
 }
+void kill_virus(char *fileName, int signitureOffset, int signitureSize)
+{
+    // fprintf(stdout, "\n\nINSIDE KILL VIRUS - File name: %s\nStarting: %d\nSize: %d\n\n", fileName, signitureOffset, signitureSize);
+
+    FILE *fp;
+    fp = fopen(fileName, "r+");
+    if (fp == NULL)
+    {
+        fprintf(stdout, "File doesn't exist\n");
+        fclose(fp);
+        exit(3);
+    }
+
+    fseek(fp, signitureOffset, SEEK_SET);
+
+    char str[signitureSize]; // = 0x90;
+    for (int i = 0; i < sizeof(str); i++)
+    {
+        str[i] = 0x90;
+    }
+    fwrite(str, 1, signitureSize, fp);
+
+    fclose(fp);
+}
 link *fix(link *virus_list)
 {
-    printf("Not implemented\n");
+    int startingByte;
+    int virusSig;
+    char *userInput = (char *)(calloc(60, sizeof(char)));
+    char *name = (char *)(calloc(18, sizeof(char)));
+
+    fprintf(stdout, "Enter signature file name, starting byte location and the size of the virus signature:\n");
+    fgets(userInput, 60, stdin);
+    sscanf(userInput, "%s %d %d", name, &startingByte, &virusSig);
+
+    // fprintf(stdout, "\n\nFile name: %s\nStarting: %d\nSize: %d\n\n", name, startingByte, virusSig);
+
+    kill_virus(name, startingByte, virusSig);
+    free(name);
+    free(userInput);
     return virus_list;
 }
 
 link *quit(link *virus_list)
 {
-       list_free(virus_list);
+    list_free(virus_list);
 
     exit(3);
     return virus_list;
 }
+struct fun_desc menu[] = {{"Load Signatures", load},
+                          {"Print Signatures", print},
+                          {"Detect Viruses", detect},
+                          {"Fix File", fix},
+                          {"Quit", quit},
+                          {NULL, NULL}};
 
 int main(int argc, char **argv)
 {
-    struct fun_desc menu[] = {{"Load Signatures", load},
-                              {"Print Signatures", print},
-                              {"Detect Viruses", detect},
-                              {"Fix File", fix},
-                              {"Quit", quit},
-                              {NULL, NULL}};
 
     int bound = sizeof(menu) / sizeof(menu[0]);
+    // link *virus_list = (link *)calloc(1, sizeof(link));
+    // link *virus_list = malloc(sizeof(link));
     link *virus_list = NULL;
+    // virus_list->vir = NULL;
+    // virus_list->nextVirus = NULL;
     while (1)
     {
         fprintf(stdout, "\nPlease choose a function:\n");
@@ -254,5 +299,8 @@ int main(int argc, char **argv)
             exit(3);
         }
     }
+    list_free(virus_list);
+    free(virus_list);
+
     return 0;
 }
