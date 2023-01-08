@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
         printf("Choose action:\n");
         int i;
-        for (i = 0; i < 6; i++)
+        for (i = 0; i < 7; i++)
             printf("%d-%s\n", i, menu[i].name);
 
         int choose;
@@ -312,14 +312,6 @@ char *getSectionHeaderType(int num)
 
 void printSymbols()
 {
-    printf("[index] value section_index section_name symbol_name");
-    if (debug)
-        printf("  size\n");
-    else
-    {
-        printf("\n");
-    }
-
     Elf32_Shdr *shdr = (Elf32_Shdr *)(map + header->e_shoff);
     Elf32_Sym *symbol_table = NULL;
     char *symbols_string_table = NULL;
@@ -336,10 +328,19 @@ void printSymbols()
         }
         if (shdr[i].sh_type == SHT_SYMTAB)
         {
+            
             symbol_table = (Elf32_Sym *)(map + shdr[i].sh_offset); /*maybe cast map to char **/
             numberOfSymbols = shdr[i].sh_size / shdr[i].sh_entsize;
+            if(debug){
+                int symbol_table_size = shdr[i].sh_size;
+                
+                printf("size: %d\tnumber of symbols:%d\n", symbol_table_size, numberOfSymbols);
+            }
         }
     }
+
+    printf("[index]\tvalue\tsection_index\tsection_name\tsymbol_name\n");
+
 
     for (i = 0; i < numberOfSymbols; i++)
     {
@@ -365,22 +366,18 @@ void printSymbols()
         {
             section_name = (char *)(stringTableOfHeader + shdr[index].sh_name);
         }
-
-        printf("%d %x %d %s %s \n", i, symbol_table[i].st_value, index, section_name, cur_name);
+        printf("[%d]\t%01x\t %d\t\t %-10s\t %-15s \n", i, symbol_table[i].st_value, index, section_name, cur_name);
     }
 }
 
 void RelocateTablesRaw()
 {
 
-    printf("Offset     Info\n");
+    printf("Offset  Info\n");
 
     Elf32_Shdr *shdr = (Elf32_Shdr *)(map + header->e_shoff);
     Elf32_Rel *relocation_table = NULL;
-    Elf32_Sym *symbol_table = NULL;
-    char *stringTableOfHeader = (char *)(map + shdr[header->e_shstrndx].sh_offset);
     int num_of_entries = 0;
-    char *str_table = NULL;
 
     int i;
     for (i = 0; i < header->e_shnum; i++)
@@ -409,7 +406,6 @@ void RelocateTablesSemantics()
     Elf32_Shdr *shdr = (Elf32_Shdr *)(map + header->e_shoff);
     Elf32_Rel *relocation_table = NULL;
     Elf32_Sym *symbol_table = NULL;
-    char *stringTableOfHeader = (char *)(map + shdr[header->e_shstrndx].sh_offset);
     int num_of_entries = 0;
     char *str_table = NULL;
 
@@ -434,7 +430,8 @@ void RelocateTablesSemantics()
                 rel = (Elf32_Rel)relocation_table[j];
                 char * rel_type = getRelocationType(ELF32_R_TYPE(rel.r_info));
 
-                printf("%x %x %s %x %s\n", relocation_table[j].r_offset, relocation_table[j].r_info,
+                
+                printf("0%x   00000%x %s %08x  %s\n", relocation_table[j].r_offset, relocation_table[j].r_info,
                        rel_type, cur_symbol->st_value, str_table + cur_symbol->st_name);
             }
         }
